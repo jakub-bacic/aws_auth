@@ -8,7 +8,7 @@ A low-level library for signing AWS API requests in Dart.
 
 ## Using
 
-Create a `AWSCredentials` object with your AWS secrets:
+Create `AWSCredentials` object with your AWS secrets:
 
 ```dart
 final credentials = AWSCredentials(
