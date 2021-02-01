@@ -21,6 +21,22 @@ void main() {
   group('AWSRequest:basic', () {
     test('Create request object directly', () {
       var request = AWSRequest(
+        Uri.parse('https://sts.amazonaws.com/foo/bar/baz'),
+        body: utf8.encode('foo bar'),
+        headers: {'My-Header': 'header-value'},
+        method: 'post',
+        queryParameters: {'My-Param': 'query-value'},
+      );
+      expect(request.host, 'sts.amazonaws.com');
+      expect(request.path, '/foo/bar/baz');
+      expect(request.queryParameters['My-Param'], 'query-value');
+      expect(request.headers['My-Header'], 'header-value');
+      expect(request.method, 'POST');
+      expect(request.body, 'foo bar');
+    });
+
+    test('Create request object directly (using String as url)', () {
+      var request = AWSRequest(
         'https://sts.amazonaws.com/foo/bar/baz',
         body: utf8.encode('foo bar'),
         headers: {'My-Header': 'header-value'},

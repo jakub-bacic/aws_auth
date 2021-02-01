@@ -7,15 +7,30 @@ import 'credentials.dart';
 import 'request.dart';
 import 'utils.dart';
 
+/// A signer that performs Signature Version 4 signing process.
+///
+/// Signer signs the requests for the provided [region] and [serviceName] with
+/// given [credentials].
+///
+/// AWS docs: https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
 class AWS4Signer {
-  static const String ALGORITHM = 'AWS4-HMAC-SHA256';
+  static const String _ALGORITHM = 'AWS4-HMAC-SHA256';
 
-  AWSCredentials credentials;
-  String region;
-  String serviceName;
+  /// Credentials used for signing process.
+  final AWSCredentials credentials;
 
+  /// AWS region (e.g. us-east-1).
+  final String region;
+
+  /// AWS service name (e.g. sts).
+  final String serviceName;
+
+  /// Construct a new AWS4Signer instance.
   AWS4Signer(this.credentials, this.region, this.serviceName);
 
+  /// Signs the given request by adding the signature to 'Authorization' header.
+  ///
+  /// Signing date can be overriden with [overrideDate].
   void sign(
     AWSRequest request, {
     DateTime overrideDate,
@@ -23,11 +38,26 @@ class AWS4Signer {
     _sign(request, overrideDate, null);
   }
 
+  /// Presigns the given request by adding the signature to the URL.
+  ///
+  /// Time period, for which the generated presigned URL is valid
+  /// is specified with [expires]. Minimum value is 1 second and
+  /// maximum is 7 days.
+  ///
+  /// Signing date can be overriden with [overrideDate].
+  ///
+  /// **IMPORTANT**: Only GET requests can be presigned. In order to presign
+  /// POST request with form-encoded body, it must be first transformed into
+  /// the corresponding GET request (by moving body to query string).
   void presign(
     AWSRequest request, {
     Duration expires = const Duration(seconds: 60),
     DateTime overrideDate,
   }) {
+    assert(request.method == 'GET');
+    assert(expires >= Duration(seconds: 1));
+    assert(expires <= Duration(days: 7));
+
     _sign(request, overrideDate, expires);
   }
 
@@ -36,6 +66,8 @@ class AWS4Signer {
     DateTime overrideDate,
     Duration expires,
   ) {
+    var isPresign = expires != null;
+
     var timestamp = overrideDate ?? DateTime.now().toUtc();
     var credentialsScope = _getCredentialsScope(region, serviceName, timestamp);
     var amzCredential = credentials.accessKeyId + '/' + credentialsScope;
@@ -45,9 +77,9 @@ class AWS4Signer {
       request.headers['Host'] = request.url.host;
     }
 
-    if (expires != null) {
+    if (isPresign) {
       request.queryParameters.addAll({
-        'X-Amz-Algorithm': ALGORITHM,
+        'X-Amz-Algorithm': _ALGORITHM,
         'X-Amz-Credential': amzCredential,
         'X-Amz-Date': formatDate(timestamp),
         'X-Amz-Expires': expires.inSeconds.toString(),
@@ -72,7 +104,7 @@ class AWS4Signer {
     var signature = _calculateSignature(credentials.secretAccessId,
         hashedCanonicalRequest, region, serviceName, timestamp);
 
-    if (expires != null) {
+    if (isPresign) {
       request.queryParameters['X-Amz-Signature'] = signature;
     } else {
       var authorizationHeader =
@@ -87,7 +119,7 @@ class AWS4Signer {
     String signature,
   ) {
     var result = <String>[
-      '${ALGORITHM} Credential=${amzCredential}',
+      '${_ALGORITHM} Credential=${amzCredential}',
       'SignedHeaders=${request.getSignedHeaders()}',
       'Signature=${signature}',
     ];
@@ -141,7 +173,7 @@ class AWS4Signer {
     DateTime timestamp,
   ) {
     var result = <String>[
-      ALGORITHM,
+      _ALGORITHM,
       formatDate(timestamp),
       _getCredentialsScope(region, serviceName, timestamp),
       hashedCanonicalRequest,

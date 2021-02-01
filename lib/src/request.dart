@@ -1,17 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 
 import 'utils.dart';
-
-class Headers extends CanonicalizedMap<String, String, String> {
-  Headers() : super((key) => key.toLowerCase());
-
-  Headers.from(Map<String, String> other)
-      : super.from(other, (key) => key.toLowerCase());
-}
 
 /// An AWS API HTTP request.
 class AWSRequest {
@@ -103,7 +95,7 @@ class AWSRequest {
   /// based on `body` argument.
   ///
   /// It automatically sets `content-type` header value
-  /// to `application/x-www-form-urlencoded; charset=UTF-8`.
+  /// to `application/json; charset=UTF-8`.
   factory AWSRequest.json(
     dynamic url, {
     String method,
