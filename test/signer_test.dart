@@ -3,9 +3,9 @@ import 'package:test/test.dart';
 
 void main() {
   group('AWS4Signer', () {
-    AWSCredentials credentials;
-    AWS4Signer signer;
-    DateTime timestamp;
+    late AWSCredentials credentials;
+    late AWS4Signer signer;
+    late DateTime timestamp;
 
     setUp(() {
       credentials = AWSCredentials(
@@ -80,9 +80,9 @@ void main() {
   });
 
   group('AWS4Signer (with session token)', () {
-    AWSCredentials credentials;
-    AWS4Signer signer;
-    DateTime timestamp;
+    late AWSCredentials credentials;
+    late AWS4Signer signer;
+    late DateTime timestamp;
 
     setUp(() {
       credentials = AWSCredentials(

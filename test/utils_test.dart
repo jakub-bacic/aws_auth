@@ -49,7 +49,7 @@ void main() {
   });
 
   group('Utils:formatDate', () {
-    DateTime timestamp;
+    late DateTime timestamp;
 
     setUp(() {
       timestamp = DateTime(2020, 2, 1, 3, 4, 5);

@@ -7,7 +7,7 @@ class AWSCredentials {
   final String secretAccessId;
 
   /// The optional security token (valid only for session credentials).
-  final String sessionToken;
+  final String? sessionToken;
 
   /// Create new instance holding AWS credentials.
   AWSCredentials(this.accessKeyId, this.secretAccessId, {this.sessionToken});
