@@ -29,10 +29,12 @@ class AWSRequest {
   String get body => utf8.decode(bodyBytes);
 
   /// The content type header value of the request.
-  String get contentType => headers['Content-Type'];
+  String? get contentType => headers['Content-Type'];
 
-  set contentType(String value) {
-    headers['Content-Type'] = value;
+  set contentType(String? value) {
+    if (value != null) {
+      headers['Content-Type'] = value;
+    }
   }
 
   /// The URI of the request.
@@ -48,10 +50,10 @@ class AWSRequest {
   /// Creates a new HTTP request.
   factory AWSRequest(
     dynamic url, {
-    String method,
-    Map<String, String> queryParameters,
-    Map<String, String> headers,
-    List<int> body,
+    String? method,
+    Map<String, String>? queryParameters,
+    Map<String, String>? headers,
+    List<int>? body,
   }) {
     final uri = _fromUriOrString(url);
 
@@ -72,9 +74,9 @@ class AWSRequest {
   /// header value to `application/x-www-form-urlencoded; charset=UTF-8`.
   factory AWSRequest.formData(
     dynamic url, {
-    Map<String, dynamic> body,
-    Map<String, String> queryParameters,
-    Map<String, String> headers,
+    Map<String, dynamic>? body,
+    Map<String, String>? queryParameters,
+    Map<String, String>? headers,
   }) {
     var request = AWSRequest(
       url,
@@ -98,10 +100,10 @@ class AWSRequest {
   /// to `application/json; charset=UTF-8`.
   factory AWSRequest.json(
     dynamic url, {
-    String method,
-    dynamic body,
-    Map<String, String> queryParameters,
-    Map<String, String> headers,
+    String? method,
+    dynamic? body,
+    Map<String, String>? queryParameters,
+    Map<String, String>? headers,
   }) {
     var request = AWSRequest(
       url,
@@ -133,7 +135,7 @@ class AWSRequest {
 
     var sortedKeys = queryParameters.keys.toList()..sort();
     sortedKeys.forEach((key) {
-      final value = queryParameters[key];
+      final value = queryParameters[key]!;
       result.add('${quote(key)}=${quote(value)}');
     });
 
@@ -151,7 +153,7 @@ class AWSRequest {
     var sortedKeys = canonicalHeadersMap.keys.toList()..sort();
     for (var key in sortedKeys) {
       var value = canonicalHeadersMap[key];
-      result.add('${key}:${value}\n');
+      result.add('$key:$value\n');
     }
 
     return result.join();

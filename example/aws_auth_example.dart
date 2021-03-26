@@ -10,7 +10,7 @@ AWSRequest createPresignGetCallerIdentityRequest(
 
   // create request
   final req = AWSRequest(
-    'https://sts.${region}.amazonaws.com/',
+    'https://sts.$region.amazonaws.com/',
     queryParameters: {
       'Action': 'GetCallerIdentity',
       'Version': '2011-06-15',
@@ -32,7 +32,7 @@ AWSRequest createGetCallerIdentityRequest(
 
   // create request
   final req = AWSRequest.formData(
-    'https://sts.${region}.amazonaws.com/',
+    'https://sts.$region.amazonaws.com/',
     body: {
       'Action': 'GetCallerIdentity',
       'Version': '2011-06-15',
@@ -53,7 +53,7 @@ String formatAsCurlCommand(AWSRequest req) {
 
   // set headers
   req.headers.forEach((key, value) {
-    cmd.add("-H '${key}: ${value}'");
+    cmd.add("-H '$key: $value'");
   });
 
   // set body

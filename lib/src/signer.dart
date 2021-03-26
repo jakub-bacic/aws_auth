@@ -33,7 +33,7 @@ class AWS4Signer {
   /// Signing date can be overriden with [overrideDate].
   void sign(
     AWSRequest request, {
-    DateTime overrideDate,
+    DateTime? overrideDate,
   }) {
     _sign(request, overrideDate, null);
   }
@@ -52,7 +52,7 @@ class AWS4Signer {
   void presign(
     AWSRequest request, {
     Duration expires = const Duration(seconds: 60),
-    DateTime overrideDate,
+    DateTime? overrideDate,
   }) {
     assert(request.method == 'GET');
     assert(expires >= Duration(seconds: 1));
@@ -63,8 +63,8 @@ class AWS4Signer {
 
   void _sign(
     AWSRequest request,
-    DateTime overrideDate,
-    Duration expires,
+    DateTime? overrideDate,
+    Duration? expires,
   ) {
     var isPresign = expires != null;
 
@@ -82,19 +82,19 @@ class AWS4Signer {
         'X-Amz-Algorithm': _ALGORITHM,
         'X-Amz-Credential': amzCredential,
         'X-Amz-Date': formatDate(timestamp),
-        'X-Amz-Expires': expires.inSeconds.toString(),
+        'X-Amz-Expires': expires!.inSeconds.toString(),
         'X-Amz-SignedHeaders': request.getSignedHeaders(),
       });
 
       if (credentials.sessionToken != null) {
         request.queryParameters['X-Amz-Security-Token'] =
-            credentials.sessionToken;
+            credentials.sessionToken!;
       }
     } else {
       request.headers['X-Amz-Date'] = formatDate(timestamp);
 
       if (credentials.sessionToken != null) {
-        request.headers['X-Amz-Security-Token'] = credentials.sessionToken;
+        request.headers['X-Amz-Security-Token'] = credentials.sessionToken!;
       }
     }
 
@@ -119,9 +119,9 @@ class AWS4Signer {
     String signature,
   ) {
     var result = <String>[
-      '${_ALGORITHM} Credential=${amzCredential}',
+      '$_ALGORITHM Credential=$amzCredential',
       'SignedHeaders=${request.getSignedHeaders()}',
-      'Signature=${signature}',
+      'Signature=$signature',
     ];
     return result.join(', ');
   }
