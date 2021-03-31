@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:aws_auth/src/request.dart';
+import 'package:aws_auth/aws_auth.dart';
 import 'package:test/test.dart';
 
 AWSRequest createTestRequest(

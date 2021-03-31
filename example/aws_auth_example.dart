@@ -1,16 +1,12 @@
 import 'package:aws_auth/aws_auth.dart';
 
 AWSRequest createPresignGetCallerIdentityRequest(
-  AWSCredentials credentials,
-  String region,
+  AWS4Signer signer,
   Duration expires,
 ) {
-  // create signer instance
-  var signer = AWS4Signer(credentials, region, 'sts');
-
   // create request
   final req = AWSRequest(
-    'https://sts.$region.amazonaws.com/',
+    'https://sts.${signer.region}.amazonaws.com/',
     queryParameters: {
       'Action': 'GetCallerIdentity',
       'Version': '2011-06-15',
@@ -23,16 +19,10 @@ AWSRequest createPresignGetCallerIdentityRequest(
   return req;
 }
 
-AWSRequest createGetCallerIdentityRequest(
-  AWSCredentials credentials,
-  String region,
-) {
-  // create signer instance
-  var signer = AWS4Signer(credentials, region, 'sts');
-
+AWSRequest createGetCallerIdentityRequest(AWS4Signer signer) {
   // create request
   final req = AWSRequest.formData(
-    'https://sts.$region.amazonaws.com/',
+    'https://sts.${signer.region}.amazonaws.com/',
     body: {
       'Action': 'GetCallerIdentity',
       'Version': '2011-06-15',
@@ -74,23 +64,24 @@ void main() async {
   final AWS_REGION = 'eu-central-1';
 
   // create credentials object
-  final credentials = AWSCredentials(
+  final credentialsProvider = AWSStaticCredentialsProvider(
     AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY,
     sessionToken: null,
   );
+  final signer = AWS4Signer(
+    credentialsProvider,
+    region: AWS_REGION,
+    serviceName: 'sts',
+  );
 
   print('SIGNING:');
-  final signedReq = createGetCallerIdentityRequest(
-    credentials,
-    AWS_REGION,
-  );
+  final signedReq = createGetCallerIdentityRequest(signer);
   print(formatAsCurlCommand(signedReq));
 
   print('PRESIGNING:');
   final presignedReq = createPresignGetCallerIdentityRequest(
-    credentials,
-    AWS_REGION,
+    signer,
     Duration(minutes: 5),
   );
   print(formatAsCurlCommand(presignedReq));

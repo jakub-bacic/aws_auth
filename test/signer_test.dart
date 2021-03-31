@@ -3,19 +3,19 @@ import 'package:test/test.dart';
 
 void main() {
   group('AWS4Signer', () {
-    late AWSCredentials credentials;
+    late AWSCredentialsProvider credentialsProvider;
     late AWS4Signer signer;
     late DateTime timestamp;
 
     setUp(() {
-      credentials = AWSCredentials(
+      credentialsProvider = AWSStaticCredentialsProvider(
         'AKIDEXAMPLE',
         'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY',
       );
       signer = AWS4Signer(
-        credentials,
-        'us-east-1',
-        'sts',
+        credentialsProvider,
+        region: 'us-east-1',
+        serviceName: 'sts',
       );
       timestamp = DateTime(2020, 2, 1, 3, 4, 5);
     });
@@ -80,18 +80,18 @@ void main() {
   });
 
   group('AWS4Signer (with session token)', () {
-    late AWSCredentials credentials;
+    late AWSCredentialsProvider credentialsProvider;
     late AWS4Signer signer;
     late DateTime timestamp;
 
     setUp(() {
-      credentials = AWSCredentials(
+      credentialsProvider = AWSStaticCredentialsProvider(
           'AKIDEXAMPLE', 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY',
           sessionToken: 'token');
       signer = AWS4Signer(
-        credentials,
-        'us-east-1',
-        'sts',
+        credentialsProvider,
+        region: 'us-east-1',
+        serviceName: 'sts',
       );
       timestamp = DateTime(2020, 2, 1, 3, 4, 5);
     });
