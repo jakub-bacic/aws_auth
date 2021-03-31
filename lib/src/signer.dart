@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:aws_auth/src/credentials_provider.dart';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 
-import 'credentials.dart';
 import 'request.dart';
 import 'utils.dart';
 
@@ -16,8 +16,8 @@ import 'utils.dart';
 class AWS4Signer {
   static const String _ALGORITHM = 'AWS4-HMAC-SHA256';
 
-  /// Credentials used for signing process.
-  final AWSCredentials credentials;
+  /// Credentials provider used for signing process.
+  final AWSCredentialsProvider credentialsProvider;
 
   /// AWS region (e.g. us-east-1).
   final String region;
@@ -26,7 +26,11 @@ class AWS4Signer {
   final String serviceName;
 
   /// Construct a new AWS4Signer instance.
-  AWS4Signer(this.credentials, this.region, this.serviceName);
+  AWS4Signer(
+    this.credentialsProvider, {
+    required this.region,
+    required this.serviceName,
+  });
 
   /// Signs the given request by adding the signature to 'Authorization' header.
   ///
@@ -66,6 +70,7 @@ class AWS4Signer {
     DateTime? overrideDate,
     Duration? expires,
   ) {
+    var credentials = credentialsProvider.getCredentials();
     var isPresign = expires != null;
 
     var timestamp = overrideDate ?? DateTime.now().toUtc();

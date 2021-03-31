@@ -8,20 +8,28 @@ A low-level library for signing AWS API requests in Dart.
 
 ## Using
 
-Create `AWSCredentials` object with your AWS secrets:
+Create `AWSCredentialsProvider` object. In order to set credentials programatically, you can
+use `AWSStaticCredentialsProvider` class:
 
 ```dart
-final credentials = AWSCredentials(
+final credentialsProvider = AWSCredentialsProvider(
   'AWS_ACCESS_KEY_ID',
   'AWS_SECRET_ACCESS_KEY',
   sessionToken: 'AWS_SESSION_TOKEN',  // this is optional
 );
 ```
 
+You can implement your own provider e.g. if you need to dynamically retrieve the credentials
+and refresh them periodically.
+
 Initialize `AWS4Signer` for the given region and service:
 
 ```dart
-final signer = AWS4Signer(credentials, 'eu-central-1', 'sts');
+final signer = AWS4Signer(
+  credentialsProvider, 
+  region: 'eu-central-1', 
+  serviceName:'sts',
+);
 ```
 
 Create `AWSRequest` object and pass it to `sign` or `presign` method of the 
