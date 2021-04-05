@@ -39,7 +39,7 @@ class AWS4Signer {
     AWSRequest request, {
     DateTime? overrideDate,
   }) {
-    _sign(request, overrideDate, null);
+    _sign(request, overrideDate, null, true);
   }
 
   /// Presigns the given request by adding the signature to the URL.
@@ -50,25 +50,33 @@ class AWS4Signer {
   ///
   /// Signing date can be overriden with [overrideDate].
   ///
+  /// Signing payload can be disabled by setting [signPayload] to `false`.
+  /// It's enabled by default for all services except `s3`, unless implicitly
+  /// overriden.
+  ///
   /// **IMPORTANT**: Only GET requests can be presigned. In order to presign
   /// POST request with form-encoded body, it must be first transformed into
   /// the corresponding GET request (by moving body to query string).
   void presign(
     AWSRequest request, {
     Duration expires = const Duration(seconds: 60),
+    bool? signPayload,
     DateTime? overrideDate,
   }) {
     assert(request.method == 'GET');
     assert(expires >= Duration(seconds: 1));
     assert(expires <= Duration(days: 7));
 
-    _sign(request, overrideDate, expires);
+    signPayload ??= _shouldSignPayload(serviceName);
+
+    _sign(request, overrideDate, expires, signPayload);
   }
 
   void _sign(
     AWSRequest request,
     DateTime? overrideDate,
     Duration? expires,
+    bool signPayload,
   ) {
     var credentials = credentialsProvider.getCredentials();
     var isPresign = expires != null;
@@ -103,7 +111,8 @@ class AWS4Signer {
       }
     }
 
-    var canonicalRequest = request.getCanonicalRequest();
+    var canonicalRequest =
+        request.getCanonicalRequest(signPayload: signPayload);
     var hashedCanonicalRequest =
         sha256.convert(utf8.encode(canonicalRequest)).toString();
     var signature = _calculateSignature(credentials.secretAccessId,
@@ -198,5 +207,10 @@ class AWS4Signer {
       'aws4_request'
     ];
     return result.join('/');
+  }
+
+  static bool _shouldSignPayload(String serviceName) {
+    final name = serviceName.toLowerCase();
+    return !['s3', 's3-object-lambda'].contains(name);
   }
 }

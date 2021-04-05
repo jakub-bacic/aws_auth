@@ -177,20 +177,27 @@ class AWSRequest {
   ///
   /// See: https://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
   String getHashedPayload() {
+    if (bodyBytes.isEmpty) {
+      // precalculated SHA256 value for empty string
+      return 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+    }
+
     return sha256.convert(bodyBytes).toString();
   }
 
   /// Return canonical request form
   ///
   /// See: https://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
-  String getCanonicalRequest() {
+  String getCanonicalRequest({
+    bool signPayload = true,
+  }) {
     var result = <String>[
       method.toUpperCase(),
       getCanonicalUri(),
       getCanonicalQueryString(),
       getCanonicalHeaders(),
       getSignedHeaders(),
-      getHashedPayload(),
+      signPayload ? getHashedPayload() : 'UNSIGNED-PAYLOAD',
     ];
     return result.join('\n');
   }
