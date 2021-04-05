@@ -2,6 +2,7 @@
 
 ## 2.0.0
 
+* Add option to disable payload signing (fixes #2)
 * Migrate to null-safety
 * Add AWSCredentialsProvider class
 
