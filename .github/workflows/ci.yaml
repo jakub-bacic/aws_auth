@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v0.1
+      - uses: dart-lang/setup-dart@v1
         with:
-          channel: 'stable'
+          sdk: 'stable'
       - id: install
         name: Install dependencies
         run: dart pub get
@@ -26,13 +26,12 @@ jobs:
         run: dart analyze --fatal-infos
 
   test:
-    needs: analyze
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v0.1
+      - uses: dart-lang/setup-dart@v1
         with:
-          channel: 'stable'
+          sdk: 'stable'
       - id: install
         name: Install dependencies
         run: dart pub get
@@ -42,3 +41,38 @@ jobs:
         run: dart pub run test_coverage
       - name: Upload coverage to Codecov 
         uses: codecov/codecov-action@v1
+
+  docs-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 'stable'
+      - name: Generate docs
+        run: dartdoc --errors unresolved-doc-reference
+      - name: Deploy to Netlify
+        if: ${{ github.event_name == 'pull_request' }}
+        id: netlify
+        uses: nwtgck/actions-netlify@v1.1
+        with:
+          publish-dir: './doc/api'
+          deploy-message: ${{ github.event.pull_request.head.sha }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          production-deploy: false
+          enable-commit-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 1
+      - name: Comment on PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '📝 Docs preview for commit ${{ github.event.pull_request.head.sha }} available at: ${{ steps.netlify.outputs.deploy-url }}'
+            })
