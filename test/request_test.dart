@@ -8,12 +8,14 @@ AWSRequest createTestRequest(
   String method = 'GET',
   Map<String, String> headers = const {},
   List<int> payload = const [],
+  Map<String, String>? queryParameters,
 }) {
   return AWSRequest(
     url,
     method: method,
     headers: headers,
     body: payload,
+    queryParameters: queryParameters,
   );
 }
 
@@ -204,27 +206,57 @@ void main() {
     });
   });
 
-  test('AWSRequest:canonicalRequest', () {
-    // example from https://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
-    var request = createTestRequest(
-      'https://iam.amazonaws.com/?Action=ListUsers&Version=2010-05-08',
-      headers: {
-        'Host': 'iam.amazonaws.com',
-        'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
-        'X-Amz-Date': '20150830T123600Z',
-      },
-    );
+  group('AWSRequest:canonicalRequest', () {
+    test('Signed payload', () {
+      // example from https://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
+      var request = createTestRequest(
+        'https://iam.amazonaws.com/?Action=ListUsers&Version=2010-05-08',
+        headers: {
+          'Host': 'iam.amazonaws.com',
+          'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+          'X-Amz-Date': '20150830T123600Z',
+        },
+      );
 
-    var canonicalRequest = request.getCanonicalRequest();
-    var expected = 'GET\n'
-        '/\n'
-        'Action=ListUsers&Version=2010-05-08\n'
-        'content-type:application/x-www-form-urlencoded; charset=utf-8\n'
-        'host:iam.amazonaws.com\n'
-        'x-amz-date:20150830T123600Z\n'
-        '\n'
-        'content-type;host;x-amz-date\n'
-        'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
-    expect(canonicalRequest, expected);
+      var canonicalRequest = request.getCanonicalRequest();
+      var expected = 'GET\n'
+          '/\n'
+          'Action=ListUsers&Version=2010-05-08\n'
+          'content-type:application/x-www-form-urlencoded; charset=utf-8\n'
+          'host:iam.amazonaws.com\n'
+          'x-amz-date:20150830T123600Z\n'
+          '\n'
+          'content-type;host;x-amz-date\n'
+          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+      expect(canonicalRequest, expected);
+    });
+
+    test('Unsigned payload', () {
+      // example from https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html
+      var request = createTestRequest(
+        'https://examplebucket.s3.amazonaws.com/test.txt',
+        queryParameters: {
+          'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+          'X-Amz-Credential':
+              'AKIAIOSFODNN7EXAMPLE/20130524/us-east-1/s3/aws4_request',
+          'X-Amz-Date': '20130524T000000Z',
+          'X-Amz-Expires': '86400',
+          'X-Amz-SignedHeaders': 'host',
+        },
+        headers: {
+          'Host': 'examplebucket.s3.amazonaws.com',
+        },
+      );
+
+      var canonicalRequest = request.getCanonicalRequest(signPayload: false);
+      var expected = 'GET\n'
+          '/test.txt\n'
+          'X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host\n'
+          'host:examplebucket.s3.amazonaws.com\n'
+          '\n'
+          'host\n'
+          'UNSIGNED-PAYLOAD';
+      expect(canonicalRequest, expected);
+    });
   });
 }
