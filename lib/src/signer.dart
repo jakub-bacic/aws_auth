@@ -10,7 +10,7 @@ import 'utils.dart';
 /// A signer that performs Signature Version 4 signing process.
 ///
 /// Signer signs the requests for the provided [region] and [serviceName] with
-/// given [credentials].
+/// given [credentialsProvider].
 ///
 /// AWS docs: https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
 class AWS4Signer {
