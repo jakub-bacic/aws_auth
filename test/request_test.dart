@@ -93,6 +93,20 @@ void main() {
     });
   });
 
+  group('AWSRequest:uriScheme', () {
+    test('No scheme fallbacks to https', () {
+      var request = createTestRequest('sts.amazon.com');
+      expect(request.url.scheme, 'https');
+    });
+
+    ['https', 'http', 'ws', 'wss'].forEach((expectedScheme) {
+      test('Respect the given URI scheme ($expectedScheme)', () {
+        var request = createTestRequest('$expectedScheme://.sts.amazon.com');
+        expect(request.url.scheme, expectedScheme);
+      });
+    });
+  });
+
   group('AWSRequest:canonicalQueryString', () {
     test('Empty query string', () {
       var request = createTestRequest('https://sts.amazonaws.com');
