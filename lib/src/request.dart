@@ -7,6 +7,9 @@ import 'utils.dart';
 
 /// An AWS API HTTP request.
 class AWSRequest {
+  /// The scheme of the request URI.
+  final String scheme;
+
   /// The HTTP method of the request.
   final String method;
 
@@ -40,7 +43,7 @@ class AWSRequest {
   /// The URI of the request.
   Uri get url {
     return Uri(
-      scheme: 'https',
+      scheme: scheme,
       host: host,
       queryParameters: queryParameters.isNotEmpty ? queryParameters : null,
       path: path,
@@ -58,6 +61,7 @@ class AWSRequest {
     final uri = _fromUriOrString(url);
 
     return AWSRequest._(
+      uri.scheme.isNotEmpty ? uri.scheme : 'https',
       method?.toUpperCase() ?? 'GET',
       uri.host,
       uri.path,
@@ -203,6 +207,7 @@ class AWSRequest {
   }
 
   AWSRequest._(
+    this.scheme,
     this.method,
     this.host,
     this.path,
