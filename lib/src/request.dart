@@ -105,7 +105,7 @@ class AWSRequest {
   factory AWSRequest.json(
     dynamic url, {
     String? method,
-    dynamic? body,
+    dynamic body,
     Map<String, String>? queryParameters,
     Map<String, String>? headers,
   }) {
