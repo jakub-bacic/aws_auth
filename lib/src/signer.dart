@@ -54,8 +54,9 @@ class AWS4Signer {
   /// It's enabled by default for all services except `s3`, unless implicitly
   /// overriden.
   ///
-  /// **IMPORTANT**: Only GET requests can be presigned. In order to presign
-  /// POST request with form-encoded body, it must be first transformed into
+  /// **IMPORTANT**: Only GET or PUT requests can be presigned.
+  /// In order to presign POST request with form-encoded body,
+  /// it must be first transformed into
   /// the corresponding GET request (by moving body to query string).
   void presign(
     AWSRequest request, {
@@ -63,7 +64,7 @@ class AWS4Signer {
     bool? signPayload,
     DateTime? overrideDate,
   }) {
-    assert(request.method == 'GET');
+    assert(request.method == 'GET' || request.method == 'PUT');
     assert(expires >= Duration(seconds: 1));
     assert(expires <= Duration(days: 7));
 
