@@ -67,3 +67,6 @@ signer.presign(req);
 
 print(req.url);
 ```
+
+### More examples in the `example` folder
+* Check the `aws_s3_presigned_url.dart` for an example on how to generate an S3 presigned upload URL.
