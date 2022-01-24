@@ -8,22 +8,14 @@ const AWS_REGION = 'region';
 const BUCKET_NAME = 'BUCKET';
 
 AWSRequest createPresignS3Request(
-    AWS4Signer signer,
-    Duration expires,
-    String bucketName,
-    String bucketPath,
-    {bool public = false}
-    ) {
+    AWS4Signer signer, Duration expires, String bucketName, String bucketPath,
+    {bool public = false}) {
   // create request
   final req = AWSRequest(
       //'https://$bucketName.${signer.region}.digitaloceanspaces.com$bucketPath',
       'https://$bucketName.s3.${signer.region}.amazonaws.com$bucketPath',
       method: 'PUT',
-      headers: {
-        if (public)
-          'x-amz-acl': 'public-read'
-      }
-  );
+      headers: {if (public) 'x-amz-acl': 'public-read'});
 
   // presign the request
   signer.presign(req, expires: expires);
@@ -44,12 +36,8 @@ Uri presignedAWS(String path, {bool public = false}) {
   );
 
   final presignedReq = createPresignS3Request(
-      signer,
-      Duration(minutes: 5),
-      BUCKET_NAME,
-      path,
-    public: public
-  );
+      signer, Duration(minutes: 5), BUCKET_NAME, path,
+      public: public);
 
   return presignedReq.url;
 }
@@ -58,9 +46,8 @@ Future<void> main() async {
   final uri = presignedAWS('/test/README.md', public: true);
 
   final uploaded = await http.put(uri,
-      body: await File('README.md').readAsBytes(), headers: {
-        'x-amz-acl': 'public-read'
-      });
+      body: await File('README.md').readAsBytes(),
+      headers: {'x-amz-acl': 'public-read'});
 
   print('Status: ${uploaded.statusCode}');
 }
